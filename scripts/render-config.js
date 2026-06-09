@@ -77,7 +77,10 @@ function main() {
     PYTHON_PATH: manifest.executables && manifest.executables.pythonPath ? manifest.executables.pythonPath : ""
   };
 
-  const enabledAgents = Object.entries(manifest.agents).filter(([, config]) => config.enabled);
+  const requestedAgents = args.agents ? new Set(args.agents.split(",").map((value) => value.trim()).filter(Boolean)) : null;
+  const enabledAgents = Object.entries(manifest.agents)
+    .filter(([, config]) => config.enabled)
+    .filter(([agent]) => !requestedAgents || requestedAgents.has(agent));
   if (enabledAgents.length === 0) {
     console.log(`No enabled agents in ${manifestPath}`);
     return;

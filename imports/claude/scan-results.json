@@ -1,0 +1,12 @@
+{
+  "sourceAgent": "claudeCode",
+  "scannedPath": "/Users/tap4fun/.claude",
+  "importableSkills": [],
+  "importableMcps": [],
+  "skipped": [
+    {
+      "path": "/Users/tap4fun/.claude/settings.json",
+      "reason": "contains environment configuration and may include secrets"
+    }
+  ]
+}

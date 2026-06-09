@@ -20,6 +20,7 @@ The repository uses a link-first model for shared skills and a template-renderin
 ## What This Repository Manages
 
 - Shared skill source directories
+- Imported third-party skills and MCP source artifacts
 - MCP source placeholders and config templates
 - Per-device manifest examples
 - Cross-platform validation and sync scripts
@@ -107,12 +108,33 @@ PowerShell:
 node scripts/validate-config.js --device devices/windows.example.json
 ```
 
+## Import Third-Party Content
+
+Import local third-party assets from supported agent installations into the repository:
+
+```bash
+node scripts/import-third-party.js
+node scripts/merge-imports.js
+```
+
+Current import behavior:
+
+- imports third-party skills from `~/.cursor/skills-cursor`
+- imports newest project-level MCP source directories from `~/.cursor/projects/*/mcps/*`
+- scans `~/.claude` safely but does not import `settings.json` or secrets
+
+Imported raw source lands in `imports/`, and merged reusable output lands in:
+
+- `skills/imported/`
+- `mcp/imported/`
+
 ## Dry-run Sync
 
 Dry-run on macOS:
 
 ```bash
 bash scripts/sync.sh --device devices/macos.example.json --dry-run
+bash scripts/sync.sh --device devices/macos.example.json --codex-only --dry-run
 ```
 
 Dry-run on Windows:
@@ -129,6 +151,7 @@ Real sync on macOS:
 
 ```bash
 bash scripts/sync.sh --device devices/my-macbook.json
+bash scripts/sync.sh --device devices/my-macbook.json --codex-only
 ```
 
 Real sync on Windows:
@@ -143,6 +166,8 @@ The sync flow:
 2. creates managed links for shared skill directories
 3. falls back to managed directory copy on Windows if links fail
 4. renders generated config files from templates
+
+`--codex-only` syncs only the Codex target and is the intended mode for importing third-party content into `~/.codex/skills/imported`.
 
 ## Windows Symlink Fallback
 
@@ -174,8 +199,10 @@ Recommended checks after setup:
 
 ```bash
 node scripts/validate-config.js --device devices/macos.example.json
+node scripts/import-third-party.js
+node scripts/merge-imports.js
 node scripts/render-config.js --device devices/macos.example.json --dry-run
-bash scripts/sync.sh --device devices/macos.example.json --dry-run
+bash scripts/sync.sh --device devices/macos.example.json --codex-only --dry-run
 ```
 
 Windows:

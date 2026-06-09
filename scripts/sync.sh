@@ -5,10 +5,11 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DEVICE_PATH=""
 DRY_RUN="false"
+CODEX_ONLY="false"
 MANAGED_MARKER=".skills-share-managed"
 
 usage() {
-  echo "Usage: bash scripts/sync.sh --device <path> [--dry-run]" >&2
+  echo "Usage: bash scripts/sync.sh --device <path> [--dry-run] [--codex-only]" >&2
   exit 1
 }
 
@@ -20,6 +21,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --dry-run)
       DRY_RUN="true"
+      shift 1
+      ;;
+    --codex-only)
+      CODEX_ONLY="true"
       shift 1
       ;;
     *)
@@ -114,6 +119,9 @@ sync_agent_skills() {
     codex)
       link_target "$ROOT_DIR/skills/shared" "$target_root/shared"
       link_target "$ROOT_DIR/skills/codex" "$target_root/codex"
+      if [[ -d "$ROOT_DIR/skills/imported" ]]; then
+        link_target "$ROOT_DIR/skills/imported" "$target_root/imported"
+      fi
       ;;
     claudeCode)
       link_target "$ROOT_DIR/skills/shared" "$target_root/shared"
@@ -127,6 +135,10 @@ sync_agent_skills() {
 }
 
 for agent in codex claudeCode cursor; do
+  if [[ "$CODEX_ONLY" == "true" && "$agent" != "codex" ]]; then
+    echo "Skip non-Codex agent in codex-only mode: $agent"
+    continue
+  fi
   enabled="$(agent_value "$agent" "enabled")"
   if [[ "$enabled" == "true" ]]; then
     sync_agent_skills "$agent"
@@ -136,9 +148,17 @@ for agent in codex claudeCode cursor; do
 done
 
 if [[ "$DRY_RUN" == "true" ]]; then
-  node scripts/render-config.js --device "$DEVICE_PATH" --dry-run
+  if [[ "$CODEX_ONLY" == "true" ]]; then
+    node scripts/render-config.js --device "$DEVICE_PATH" --dry-run --agents codex
+  else
+    node scripts/render-config.js --device "$DEVICE_PATH" --dry-run
+  fi
 else
-  node scripts/render-config.js --device "$DEVICE_PATH"
+  if [[ "$CODEX_ONLY" == "true" ]]; then
+    node scripts/render-config.js --device "$DEVICE_PATH" --agents codex
+  else
+    node scripts/render-config.js --device "$DEVICE_PATH"
+  fi
 fi
 
 echo "Sync complete"

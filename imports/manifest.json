@@ -1,0 +1,336 @@
+{
+  "generatedAt": "2026-06-09T08:35:35.004Z",
+  "imported": [
+    {
+      "type": "skill",
+      "name": "automate",
+      "sourceAgent": "cursor",
+      "sourcePath": "/Users/tap4fun/.cursor/skills-cursor/automate",
+      "sourceMtimeMs": 1780956235607.9636,
+      "importPath": "/Users/tap4fun/Documents/SkillsShare/imports/cursor/skills/automate"
+    },
+    {
+      "type": "skill",
+      "name": "babysit",
+      "sourceAgent": "cursor",
+      "sourcePath": "/Users/tap4fun/.cursor/skills-cursor/babysit",
+      "sourceMtimeMs": 1780036931956.6187,
+      "importPath": "/Users/tap4fun/Documents/SkillsShare/imports/cursor/skills/babysit"
+    },
+    {
+      "type": "skill",
+      "name": "canvas",
+      "sourceAgent": "cursor",
+      "sourcePath": "/Users/tap4fun/.cursor/skills-cursor/canvas",
+      "sourceMtimeMs": 1780968846065.4062,
+      "importPath": "/Users/tap4fun/Documents/SkillsShare/imports/cursor/skills/canvas"
+    },
+    {
+      "type": "skill",
+      "name": "create-hook",
+      "sourceAgent": "cursor",
+      "sourcePath": "/Users/tap4fun/.cursor/skills-cursor/create-hook",
+      "sourceMtimeMs": 1780036932009.9417,
+      "importPath": "/Users/tap4fun/Documents/SkillsShare/imports/cursor/skills/create-hook"
+    },
+    {
+      "type": "skill",
+      "name": "create-rule",
+      "sourceAgent": "cursor",
+      "sourcePath": "/Users/tap4fun/.cursor/skills-cursor/create-rule",
+      "sourceMtimeMs": 1780036932010.8005,
+      "importPath": "/Users/tap4fun/Documents/SkillsShare/imports/cursor/skills/create-rule"
+    },
+    {
+      "type": "skill",
+      "name": "create-skill",
+      "sourceAgent": "cursor",
+      "sourcePath": "/Users/tap4fun/.cursor/skills-cursor/create-skill",
+      "sourceMtimeMs": 1780036932014.6074,
+      "importPath": "/Users/tap4fun/Documents/SkillsShare/imports/cursor/skills/create-skill"
+    },
+    {
+      "type": "skill",
+      "name": "create-subagent",
+      "sourceAgent": "cursor",
+      "sourcePath": "/Users/tap4fun/.cursor/skills-cursor/create-subagent",
+      "sourceMtimeMs": 1780036932015.3938,
+      "importPath": "/Users/tap4fun/Documents/SkillsShare/imports/cursor/skills/create-subagent"
+    },
+    {
+      "type": "skill",
+      "name": "loop",
+      "sourceAgent": "cursor",
+      "sourcePath": "/Users/tap4fun/.cursor/skills-cursor/loop",
+      "sourceMtimeMs": 1780086974866.4976,
+      "importPath": "/Users/tap4fun/Documents/SkillsShare/imports/cursor/skills/loop"
+    },
+    {
+      "type": "skill",
+      "name": "migrate-to-skills",
+      "sourceAgent": "cursor",
+      "sourcePath": "/Users/tap4fun/.cursor/skills-cursor/migrate-to-skills",
+      "sourceMtimeMs": 1780036932019.2256,
+      "importPath": "/Users/tap4fun/Documents/SkillsShare/imports/cursor/skills/migrate-to-skills"
+    },
+    {
+      "type": "skill",
+      "name": "sdk",
+      "sourceAgent": "cursor",
+      "sourcePath": "/Users/tap4fun/.cursor/skills-cursor/sdk",
+      "sourceMtimeMs": 1780036932016.7341,
+      "importPath": "/Users/tap4fun/Documents/SkillsShare/imports/cursor/skills/sdk"
+    },
+    {
+      "type": "skill",
+      "name": "shell",
+      "sourceAgent": "cursor",
+      "sourcePath": "/Users/tap4fun/.cursor/skills-cursor/shell",
+      "sourceMtimeMs": 1780036932020.6506,
+      "importPath": "/Users/tap4fun/Documents/SkillsShare/imports/cursor/skills/shell"
+    },
+    {
+      "type": "skill",
+      "name": "split-to-prs",
+      "sourceAgent": "cursor",
+      "sourcePath": "/Users/tap4fun/.cursor/skills-cursor/split-to-prs",
+      "sourceMtimeMs": 1780036932021.5254,
+      "importPath": "/Users/tap4fun/Documents/SkillsShare/imports/cursor/skills/split-to-prs"
+    },
+    {
+      "type": "skill",
+      "name": "statusline",
+      "sourceAgent": "cursor",
+      "sourcePath": "/Users/tap4fun/.cursor/skills-cursor/statusline",
+      "sourceMtimeMs": 1780036932022.0864,
+      "importPath": "/Users/tap4fun/Documents/SkillsShare/imports/cursor/skills/statusline"
+    },
+    {
+      "type": "skill",
+      "name": "update-cli-config",
+      "sourceAgent": "cursor",
+      "sourcePath": "/Users/tap4fun/.cursor/skills-cursor/update-cli-config",
+      "sourceMtimeMs": 1780620926229.918,
+      "importPath": "/Users/tap4fun/Documents/SkillsShare/imports/cursor/skills/update-cli-config"
+    },
+    {
+      "type": "skill",
+      "name": "update-cursor-settings",
+      "sourceAgent": "cursor",
+      "sourcePath": "/Users/tap4fun/.cursor/skills-cursor/update-cursor-settings",
+      "sourceMtimeMs": 1780036932034.7349,
+      "importPath": "/Users/tap4fun/Documents/SkillsShare/imports/cursor/skills/update-cursor-settings"
+    },
+    {
+      "type": "mcp",
+      "name": "cursor-app-control",
+      "sourceAgent": "cursor",
+      "sourcePath": "/Users/tap4fun/.cursor/projects/empty-window/mcps/cursor-app-control",
+      "sourceProject": "empty-window",
+      "sourceMtimeMs": 1780628723029.749,
+      "importPath": "/Users/tap4fun/Documents/SkillsShare/imports/cursor/mcps/cursor-app-control",
+      "normalizedSourceProject": "empty-window"
+    },
+    {
+      "type": "mcp",
+      "name": "cursor-backend-control",
+      "sourceAgent": "cursor",
+      "sourcePath": "/Users/tap4fun/.cursor/projects/Users-tap4fun-Mind-to-Doc/mcps/cursor-backend-control",
+      "sourceProject": "Users-tap4fun-Mind-to-Doc",
+      "sourceMtimeMs": 1780470591964.0217,
+      "importPath": "/Users/tap4fun/Documents/SkillsShare/imports/cursor/mcps/cursor-backend-control",
+      "normalizedSourceProject": "Users-tap4fun-Mind-to-Doc"
+    },
+    {
+      "type": "mcp",
+      "name": "cursor-ide-browser",
+      "sourceAgent": "cursor",
+      "sourcePath": "/Users/tap4fun/.cursor/projects/empty-window/mcps/cursor-ide-browser",
+      "sourceProject": "empty-window",
+      "sourceMtimeMs": 1780901012368.6448,
+      "importPath": "/Users/tap4fun/Documents/SkillsShare/imports/cursor/mcps/cursor-ide-browser",
+      "normalizedSourceProject": "empty-window"
+    }
+  ],
+  "scans": [
+    {
+      "sourceAgent": "claudeCode",
+      "status": "no-safe-importable-assets-found",
+      "scannedPath": "/Users/tap4fun/.claude"
+    }
+  ],
+  "merge": {
+    "generatedAt": "2026-06-09T08:35:39.288Z",
+    "winners": [
+      {
+        "type": "skill",
+        "name": "automate",
+        "sourceAgent": "cursor",
+        "sourcePath": "/Users/tap4fun/.cursor/skills-cursor/automate",
+        "sourceMtimeMs": 1780956235607.9636,
+        "importPath": "/Users/tap4fun/Documents/SkillsShare/imports/cursor/skills/automate",
+        "mergedPath": "/Users/tap4fun/Documents/SkillsShare/skills/imported/automate"
+      },
+      {
+        "type": "skill",
+        "name": "babysit",
+        "sourceAgent": "cursor",
+        "sourcePath": "/Users/tap4fun/.cursor/skills-cursor/babysit",
+        "sourceMtimeMs": 1780036931956.6187,
+        "importPath": "/Users/tap4fun/Documents/SkillsShare/imports/cursor/skills/babysit",
+        "mergedPath": "/Users/tap4fun/Documents/SkillsShare/skills/imported/babysit"
+      },
+      {
+        "type": "skill",
+        "name": "canvas",
+        "sourceAgent": "cursor",
+        "sourcePath": "/Users/tap4fun/.cursor/skills-cursor/canvas",
+        "sourceMtimeMs": 1780968846065.4062,
+        "importPath": "/Users/tap4fun/Documents/SkillsShare/imports/cursor/skills/canvas",
+        "mergedPath": "/Users/tap4fun/Documents/SkillsShare/skills/imported/canvas"
+      },
+      {
+        "type": "skill",
+        "name": "create-hook",
+        "sourceAgent": "cursor",
+        "sourcePath": "/Users/tap4fun/.cursor/skills-cursor/create-hook",
+        "sourceMtimeMs": 1780036932009.9417,
+        "importPath": "/Users/tap4fun/Documents/SkillsShare/imports/cursor/skills/create-hook",
+        "mergedPath": "/Users/tap4fun/Documents/SkillsShare/skills/imported/create-hook"
+      },
+      {
+        "type": "skill",
+        "name": "create-rule",
+        "sourceAgent": "cursor",
+        "sourcePath": "/Users/tap4fun/.cursor/skills-cursor/create-rule",
+        "sourceMtimeMs": 1780036932010.8005,
+        "importPath": "/Users/tap4fun/Documents/SkillsShare/imports/cursor/skills/create-rule",
+        "mergedPath": "/Users/tap4fun/Documents/SkillsShare/skills/imported/create-rule"
+      },
+      {
+        "type": "skill",
+        "name": "create-skill",
+        "sourceAgent": "cursor",
+        "sourcePath": "/Users/tap4fun/.cursor/skills-cursor/create-skill",
+        "sourceMtimeMs": 1780036932014.6074,
+        "importPath": "/Users/tap4fun/Documents/SkillsShare/imports/cursor/skills/create-skill",
+        "mergedPath": "/Users/tap4fun/Documents/SkillsShare/skills/imported/create-skill"
+      },
+      {
+        "type": "skill",
+        "name": "create-subagent",
+        "sourceAgent": "cursor",
+        "sourcePath": "/Users/tap4fun/.cursor/skills-cursor/create-subagent",
+        "sourceMtimeMs": 1780036932015.3938,
+        "importPath": "/Users/tap4fun/Documents/SkillsShare/imports/cursor/skills/create-subagent",
+        "mergedPath": "/Users/tap4fun/Documents/SkillsShare/skills/imported/create-subagent"
+      },
+      {
+        "type": "skill",
+        "name": "loop",
+        "sourceAgent": "cursor",
+        "sourcePath": "/Users/tap4fun/.cursor/skills-cursor/loop",
+        "sourceMtimeMs": 1780086974866.4976,
+        "importPath": "/Users/tap4fun/Documents/SkillsShare/imports/cursor/skills/loop",
+        "mergedPath": "/Users/tap4fun/Documents/SkillsShare/skills/imported/loop"
+      },
+      {
+        "type": "skill",
+        "name": "migrate-to-skills",
+        "sourceAgent": "cursor",
+        "sourcePath": "/Users/tap4fun/.cursor/skills-cursor/migrate-to-skills",
+        "sourceMtimeMs": 1780036932019.2256,
+        "importPath": "/Users/tap4fun/Documents/SkillsShare/imports/cursor/skills/migrate-to-skills",
+        "mergedPath": "/Users/tap4fun/Documents/SkillsShare/skills/imported/migrate-to-skills"
+      },
+      {
+        "type": "skill",
+        "name": "sdk",
+        "sourceAgent": "cursor",
+        "sourcePath": "/Users/tap4fun/.cursor/skills-cursor/sdk",
+        "sourceMtimeMs": 1780036932016.7341,
+        "importPath": "/Users/tap4fun/Documents/SkillsShare/imports/cursor/skills/sdk",
+        "mergedPath": "/Users/tap4fun/Documents/SkillsShare/skills/imported/sdk"
+      },
+      {
+        "type": "skill",
+        "name": "shell",
+        "sourceAgent": "cursor",
+        "sourcePath": "/Users/tap4fun/.cursor/skills-cursor/shell",
+        "sourceMtimeMs": 1780036932020.6506,
+        "importPath": "/Users/tap4fun/Documents/SkillsShare/imports/cursor/skills/shell",
+        "mergedPath": "/Users/tap4fun/Documents/SkillsShare/skills/imported/shell"
+      },
+      {
+        "type": "skill",
+        "name": "split-to-prs",
+        "sourceAgent": "cursor",
+        "sourcePath": "/Users/tap4fun/.cursor/skills-cursor/split-to-prs",
+        "sourceMtimeMs": 1780036932021.5254,
+        "importPath": "/Users/tap4fun/Documents/SkillsShare/imports/cursor/skills/split-to-prs",
+        "mergedPath": "/Users/tap4fun/Documents/SkillsShare/skills/imported/split-to-prs"
+      },
+      {
+        "type": "skill",
+        "name": "statusline",
+        "sourceAgent": "cursor",
+        "sourcePath": "/Users/tap4fun/.cursor/skills-cursor/statusline",
+        "sourceMtimeMs": 1780036932022.0864,
+        "importPath": "/Users/tap4fun/Documents/SkillsShare/imports/cursor/skills/statusline",
+        "mergedPath": "/Users/tap4fun/Documents/SkillsShare/skills/imported/statusline"
+      },
+      {
+        "type": "skill",
+        "name": "update-cli-config",
+        "sourceAgent": "cursor",
+        "sourcePath": "/Users/tap4fun/.cursor/skills-cursor/update-cli-config",
+        "sourceMtimeMs": 1780620926229.918,
+        "importPath": "/Users/tap4fun/Documents/SkillsShare/imports/cursor/skills/update-cli-config",
+        "mergedPath": "/Users/tap4fun/Documents/SkillsShare/skills/imported/update-cli-config"
+      },
+      {
+        "type": "skill",
+        "name": "update-cursor-settings",
+        "sourceAgent": "cursor",
+        "sourcePath": "/Users/tap4fun/.cursor/skills-cursor/update-cursor-settings",
+        "sourceMtimeMs": 1780036932034.7349,
+        "importPath": "/Users/tap4fun/Documents/SkillsShare/imports/cursor/skills/update-cursor-settings",
+        "mergedPath": "/Users/tap4fun/Documents/SkillsShare/skills/imported/update-cursor-settings"
+      },
+      {
+        "type": "mcp",
+        "name": "cursor-app-control",
+        "sourceAgent": "cursor",
+        "sourcePath": "/Users/tap4fun/.cursor/projects/empty-window/mcps/cursor-app-control",
+        "sourceProject": "empty-window",
+        "sourceMtimeMs": 1780628723029.749,
+        "importPath": "/Users/tap4fun/Documents/SkillsShare/imports/cursor/mcps/cursor-app-control",
+        "normalizedSourceProject": "empty-window",
+        "mergedPath": "/Users/tap4fun/Documents/SkillsShare/mcp/imported/cursor-app-control"
+      },
+      {
+        "type": "mcp",
+        "name": "cursor-backend-control",
+        "sourceAgent": "cursor",
+        "sourcePath": "/Users/tap4fun/.cursor/projects/Users-tap4fun-Mind-to-Doc/mcps/cursor-backend-control",
+        "sourceProject": "Users-tap4fun-Mind-to-Doc",
+        "sourceMtimeMs": 1780470591964.0217,
+        "importPath": "/Users/tap4fun/Documents/SkillsShare/imports/cursor/mcps/cursor-backend-control",
+        "normalizedSourceProject": "Users-tap4fun-Mind-to-Doc",
+        "mergedPath": "/Users/tap4fun/Documents/SkillsShare/mcp/imported/cursor-backend-control"
+      },
+      {
+        "type": "mcp",
+        "name": "cursor-ide-browser",
+        "sourceAgent": "cursor",
+        "sourcePath": "/Users/tap4fun/.cursor/projects/empty-window/mcps/cursor-ide-browser",
+        "sourceProject": "empty-window",
+        "sourceMtimeMs": 1780901012368.6448,
+        "importPath": "/Users/tap4fun/Documents/SkillsShare/imports/cursor/mcps/cursor-ide-browser",
+        "normalizedSourceProject": "empty-window",
+        "mergedPath": "/Users/tap4fun/Documents/SkillsShare/mcp/imported/cursor-ide-browser"
+      }
+    ],
+    "losers": []
+  }
+}
