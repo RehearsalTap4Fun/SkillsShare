@@ -1,0 +1,27 @@
+{
+  "deviceName": "macbook-example",
+  "os": "macos",
+  "repoRoot": "/Users/yourname/Documents/SkillsShare",
+  "homeDir": "/Users/yourname",
+  "executables": {
+    "nodePath": "/opt/homebrew/bin/node",
+    "pythonPath": "/usr/bin/python3"
+  },
+  "agents": {
+    "codex": {
+      "enabled": true,
+      "skillsTargetDir": "/Users/yourname/.codex/skills",
+      "configTargetFile": "/Users/yourname/.codex/mcp.generated.json"
+    },
+    "claudeCode": {
+      "enabled": true,
+      "skillsTargetDir": "/Users/yourname/.claude/skills",
+      "configTargetFile": "/Users/yourname/.claude/settings.generated.json"
+    },
+    "cursor": {
+      "enabled": true,
+      "skillsTargetDir": "/Users/yourname/.cursor/skills",
+      "configTargetFile": "/Users/yourname/.cursor/mcp.generated.json"
+    }
+  }
+}

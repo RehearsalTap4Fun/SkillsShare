@@ -1,0 +1,27 @@
+{
+  "deviceName": "windows-example",
+  "os": "windows",
+  "repoRoot": "C:\\Users\\yourname\\Documents\\SkillsShare",
+  "homeDir": "C:\\Users\\yourname",
+  "executables": {
+    "nodePath": "C:\\Program Files\\nodejs\\node.exe",
+    "pythonPath": "C:\\Python311\\python.exe"
+  },
+  "agents": {
+    "codex": {
+      "enabled": true,
+      "skillsTargetDir": "C:\\Users\\yourname\\.codex\\skills",
+      "configTargetFile": "C:\\Users\\yourname\\.codex\\mcp.generated.json"
+    },
+    "claudeCode": {
+      "enabled": true,
+      "skillsTargetDir": "C:\\Users\\yourname\\.claude\\skills",
+      "configTargetFile": "C:\\Users\\yourname\\.claude\\settings.generated.json"
+    },
+    "cursor": {
+      "enabled": true,
+      "skillsTargetDir": "C:\\Users\\yourname\\.cursor\\skills",
+      "configTargetFile": "C:\\Users\\yourname\\.cursor\\mcp.generated.json"
+    }
+  }
+}
