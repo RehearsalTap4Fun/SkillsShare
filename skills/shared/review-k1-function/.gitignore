@@ -1,0 +1,11 @@
+.env
+.env.*
+!.env.example
+*.local.json
+*.private.json
+.local/
+.tmp/
+.cache/
+reports/
+__pycache__/
+*.pyc

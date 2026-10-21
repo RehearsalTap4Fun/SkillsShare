@@ -1,0 +1,5 @@
+if(!Logic.LoginMgrNew.I.IsLogin || Logic.LPlayer.I.PlayerID!=__PLAYER_ID__ || Logic.LPlayer.I.ServerId!=__SERVER_ID__) return "ABORT_IDENTITY";
+var l=Game.Data.GameData.I.LineUpData;
+var rows=new System.Collections.Generic.List<object>();
+foreach(var idx in l.lockedList){var d=l.GetLineUpDataByIndex(idx);rows.Add(new{idx,d.id,legacyState=d.state,stateName=((cspb.LineupState)d.state).ToString(),newState=l.GetNewLineupStateInfo(d.id),idle=l.IsLineupIdleForMarch(d),canChange=l.CanChangeLineUpState(idx)});}
+return new{newTroopState=Logic.LSwitchMgr.I.IsFunctionOpen(Config.SwitchConfig.NewTroopState),idleId=l.GetIdleMarchLineUpData()?.id,rows};

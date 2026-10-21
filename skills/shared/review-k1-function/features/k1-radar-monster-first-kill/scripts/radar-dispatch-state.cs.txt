@@ -1,0 +1,12 @@
+var ui=DeepUI.SceneManager1.I.FindScene(typeof(UI.UIMain2));
+var fields=new System.Collections.Generic.Dictionary<string,object>();
+if(ui!=null) foreach(var n in new[]{"m_IsDispatchingTroop","m_TargetId","m_MarchAct","selectedLineUpIndex"}) {var f=ui.GetType().GetField(n,System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic); if(f!=null) fields[n]=f.GetValue(ui);}
+var rows=new System.Collections.Generic.List<object>();
+foreach(var b in UnityEngine.Object.FindObjectsOfType<UnityEngine.MonoBehaviour>()){
+ if(b==null || !b.gameObject.activeInHierarchy) continue;
+ var path=b.name;var t=b.transform.parent;while(t!=null){path=t.name+"/"+path;t=t.parent;}
+ if(!(path.Contains("LineUp")||path.Contains("Operation")||path.Contains("Dispatch")||path.Contains("GM")))continue;
+ if(!(b is UnityEngine.UI.Text) && !(b is UnityEngine.UI.Button) && b.GetType().Name!="EventTriggerListener")continue;
+ rows.Add(new{id=b.gameObject.GetInstanceID(),type=b.GetType().Name,path,text=b is UnityEngine.UI.Text ? ((UnityEngine.UI.Text)b).text : null});
+}
+return new{fields,rows,timeScale=UnityEngine.Time.timeScale};

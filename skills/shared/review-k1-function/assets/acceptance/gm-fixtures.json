@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "fixtures": [
+    {
+      "fixtureId": "stamina",
+      "available": true,
+      "reason": "Requires source-bound Unity adapter and live identity",
+      "adapterId": "gold-miner",
+      "adapterVersion": "user-bound-v1",
+      "parameterSchema": {
+        "amount": {
+          "type": "integer",
+          "minimum": -100,
+          "maximum": 100
+        }
+      },
+      "ownedFields": [
+        "staminaRaw"
+      ],
+      "effects": [
+        {
+          "field": "staminaRaw",
+          "mode": "add",
+          "parameter": "amount"
+        }
+      ],
+      "idempotency": "ledger",
+      "cleanup": "restore",
+      "irreversibleEffects": [],
+      "schemaVersion": 1
+    },
+    {
+      "fixtureId": "level",
+      "available": false,
+      "reason": "Current round loss must be accepted; requires source binding"
+    },
+    {
+      "fixtureId": "talent",
+      "available": false,
+      "reason": "Requires source binding"
+    },
+    {
+      "fixtureId": "heartbeat_timeout",
+      "available": false,
+      "reason": "Requires source binding and reconnect observation"
+    },
+    {
+      "fixtureId": "connection_close",
+      "available": false,
+      "reason": "Requires source binding and reconnect observation"
+    }
+  ]
+}

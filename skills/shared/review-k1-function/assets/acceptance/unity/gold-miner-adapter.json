@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "adapterId": "gold-miner",
+  "version": "user-bound-v1",
+  "sourceIdentity": {
+    "sha": "",
+    "files": {
+      "client/Assets/k1/Editor/Tools/ToolSet/GoldMiner/GoldMinerGmPanel.Commands.cs": "",
+      "client/Assets/k1/Script/HotfixScripts/K1D1/Code/Game/GoldMiner/Mgr/LGoldMinerMgr.Data.cs": "",
+      "client/Assets/k1/Script/HotfixScripts/K1D1/Code/Game/Data/Dynamic/GM/GMGameData.cs": ""
+    }
+  },
+  "requiredTypes": [
+    "Logic.LPlayer",
+    "Game.GoldMiner.LGoldMinerMgr"
+  ],
+  "identity": {
+    "accountId": "",
+    "serverId": "",
+    "activityId": "",
+    "clientIdentity": "",
+    "sessionId": ""
+  },
+  "validatedAt": "",
+  "validation": "unverified: bind and verify in the current authorized run",
+  "runtimeAssembly": ""
+}

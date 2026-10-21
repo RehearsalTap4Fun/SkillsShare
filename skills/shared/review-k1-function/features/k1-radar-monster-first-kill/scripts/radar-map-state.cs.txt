@@ -1,0 +1,2 @@
+if(Logic.LPlayer.I.PlayerID!=__PLAYER_ID__ || Logic.LPlayer.I.ServerId!=__SERVER_ID__) return "ABORT_WRONG_ACCOUNT";
+return new {uid=Logic.LPlayer.I.PlayerID,server=Logic.LPlayer.I.ServerId,cityScene=Logic.LPlayer.I.GetMainCityScene().ToString(),currentScene=Logic.LCrossServer.I.CurrSceneType.ToString(),awayFromHome=Logic.WMapUtil.IsAwayFromHomeWMapScene(),homeScene=Logic.WMapUtil.GetServerWMapSceneType().ToString(),entityCount=Logic.LMapEntityManager.I.GetEntitiesInView().Count};

@@ -1,0 +1,10 @@
+var m = UI.CpeTaskMgr.I;
+var flags = System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
+var output = new System.Collections.Generic.List<object>();
+if(m.tasks==null) return new {uid=Logic.LPlayer.I.PlayerID,server=Logic.LPlayer.I.ServerId,open=m.IsOpen,status="tasks_not_ready"};
+foreach(var t in m.tasks) {
+    var c = m.GetConfig(t.cfgId);
+    if(c==null) { output.Add(new {t.cfgId,state=t.state.ToString(),t.status,configMissing=true}); continue; }
+    output.Add(new {t.cfgId,t.uid,t.startTime,t.endTime,t.status,state=t.state.ToString(),c.Visible,c.Order,c.Count,c.QuestType,c.QuestDes,c.Duration,c.Params,c.GplayID,rewards=c.OverrodeRewards});
+}
+return new {uid=Logic.LPlayer.I.PlayerID,server=Logic.LPlayer.I.ServerId,loginServer=Logic.LoginMgrNew.I.loginData.serverid,open=m.IsOpen,red=m.redDots,configInited=m.GetType().GetField("_configInited",flags).GetValue(m),tasks=output};

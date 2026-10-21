@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "runId": "REPLACE_WITH_UNIQUE_RUN_ID",
+  "baselineFile": "precheck-input.json",
+  "baselineSha256": "REPLACE_WITH_ACTUAL_BASELINE_FILE_SHA256",
+  "assertions": [
+    {
+      "id": "TC-1/main",
+      "testcaseId": "TC-1",
+      "expected": "填写已确认用例中的一个独立预期",
+      "action": "填写实际正常业务入口和前置准备动作",
+      "phase": 0,
+      "dependsOn": [],
+      "requiredEvidence": ["protocol", "server"]
+    }
+  ]
+}

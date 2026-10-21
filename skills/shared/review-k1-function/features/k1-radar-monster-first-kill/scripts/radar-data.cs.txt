@@ -1,0 +1,13 @@
+if(!Logic.LoginMgrNew.I.IsLogin || Logic.LPlayer.I.PlayerID!=__PLAYER_ID__ || Logic.LPlayer.I.ServerId!=__SERVER_ID__) return "ABORT_WRONG_ACCOUNT";
+var configs=new System.Collections.Generic.List<object>();
+foreach(var task in Logic.CollectAtlasDataMgr.I.tasks){
+ var cfg=Cfg.C.CEnergyAtlasMission.I(task.cfgId);
+ var search=Cfg.C.CD2Search.I(cfg.Exp);
+ configs.Add(new{task,cfg.Id,cfg.Exp,cfg.EnergyCost,cfg.Reward,searchType=search.Type});
+}
+var npcs=new System.Collections.Generic.List<object>();
+foreach(var pair in Logic.LMapEntityManager.I.GetEntitiesInView()){
+ var npc=pair.Value.NpcTroop;
+ if(npc!=null && npc.exploreAtlasExt!=null && npc.exploreAtlasExt.callerId==__PLAYER_ID__) npcs.Add(new{id=pair.Key,npc});
+}
+return new{configs,npcs};

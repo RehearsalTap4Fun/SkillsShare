@@ -1,0 +1,79 @@
+// Bounded normal input agent. Uses rendered artwork only, never session.Elements or collision/score mutation.
+var tag="__INPUT_READY_KEY__";
+if(!UnityEngine.Application.isPlaying||Logic.LPlayer.I.PlayerID!=__PLAYER_ID__||Logic.LPlayer.I.ServerId!=__SERVER_ID__||Game.GoldMiner.LGoldMinerMgr.I.ActvId!=__ACTIVITY_ID__L)return "identity not ready";
+if(typeof(UI.GoldMinerResultPanel).Assembly.ManifestModule.ModuleVersionId.ToString()!="__CLIENT_MODULE_ID__")return "client version changed; relearn affected flow before installation";
+var previous=System.AppDomain.CurrentDomain.GetData(tag) as System.Action;previous?.Invoke();
+var learnedArt=new System.Collections.Generic.HashSet<string>(new[]{"gold_large","gold_mid","gold_small","diamond","money_bag","stone","stone_large","dynamite","power_potion","pangolin","beetle","clock","magnet","freeze_canister","stone_breaker","golden_claw","slot_machine"});
+Game.GoldMiner.GoldMinerBattleView view=null;
+Game.GoldMiner.GoldMinerRuntimeSession session=null;
+var log=new System.Collections.Generic.List<object>();
+double start=UnityEditor.EditorApplication.timeSinceStartup,lastTick=0,readySince=0,lastFire=0;bool closed=false,clockPending=false;long clockDurationBefore=0; int potionCount=0,bombCount=0,clockCount=0;double lastBomb=0,lastPotion=-20000,lastClock=-20000;var visualPositions=new System.Collections.Generic.Dictionary<int,UnityEngine.Vector2>();
+UnityEditor.EditorApplication.CallbackFunction tick=null;
+UnityEditor.AssemblyReloadEvents.AssemblyReloadCallback reload=null;
+System.Action stop=null;
+stop=()=>{if(closed)return;closed=true;UnityEditor.EditorApplication.update-=tick;UnityEditor.AssemblyReloadEvents.beforeAssemblyReload-=reload;System.AppDomain.CurrentDomain.SetData(tag,null);System.IO.File.AppendAllText("__RUN_DIRECTORY__/visible-inputs.jsonl",Newtonsoft.Json.JsonConvert.SerializeObject(new{level=session==null?0:session.LevelID,log,cleanup=true})+"\n");};
+reload=()=>stop();
+tick=()=>{try{
+ double now=UnityEditor.EditorApplication.timeSinceStartup;
+ if(!UnityEngine.Application.isPlaying||Logic.LPlayer.I.PlayerID!=__PLAYER_ID__||Logic.LPlayer.I.ServerId!=__SERVER_ID__||Game.GoldMiner.LGoldMinerMgr.I.ActvId!=__ACTIVITY_ID__L||now-start>600){stop();return;}
+ if(now-lastTick<0.075)return;lastTick=now;
+ if(session==null){var candidate=UnityEngine.Object.FindObjectOfType<Game.GoldMiner.GoldMinerBattleView>();if(candidate!=null&&candidate.Session!=null&&Game.GoldMiner.LGoldMinerMgr.I.CurrentSession==candidate.Session){view=candidate;session=candidate.Session;log.Add(new{started=System.DateTimeOffset.Now.ToString("o"),gameTime=session.GameTime,level=session.LevelID});lastFire=now;}else return;}
+ if(view==null||view.Session!=session||Game.GoldMiner.LGoldMinerMgr.I.CurrentSession!=session){log.Add(new{endedLevel=session.LevelID});session=null;view=null;readySince=0;bombCount=0;potionCount=0;clockCount=0;clockPending=false;lastPotion=-20000;lastClock=-20000;visualPositions.Clear();return;}if(session.GameTime>=session.LevelDurationMs)return;
+ if(DeepUI.PopupManager.I.FindPopupCountExceptType<UI.GoldMinerBattleHudPanel>()>0){readySince=0;return;}
+ // Gather all unfamiliar artwork before pausing through the ordinary info UI.
+ var unknown=new System.Collections.Generic.HashSet<string>();
+ foreach(var ev in UnityEngine.Object.FindObjectsOfType<Game.GoldMiner.ElementSpriteView>())foreach(var rr in ev.GetComponentsInChildren<UnityEngine.Renderer>().Where(r=>r.enabled)){
+ var sp=rr as UnityEngine.SpriteRenderer;string name=sp!=null&&sp.sprite!=null?sp.sprite.texture.name:rr.sharedMaterial?.mainTexture?.name;if(string.IsNullOrEmpty(name))continue;
+ var n=name.ToLowerInvariant().Replace("ui_icon_goldminer_","");if(learnedArt.Contains(n))continue;unknown.Add(name);
+ }
+ if(unknown.Count>0){System.IO.File.AppendAllText("__RUN_DIRECTORY__/learning-alerts.jsonl",Newtonsoft.Json.JsonConvert.SerializeObject(new{at=System.DateTimeOffset.Now.ToString("o"),level=session.LevelID,unknownArt=unknown.ToArray(),gameTime=session.GameTime})+System.Environment.NewLine);UnityEngine.ScreenCapture.CaptureScreenshot("__RUN_DIRECTORY__/new-art-"+session.LevelID+".png");typeof(Game.GoldMiner.GoldMinerBattleView).GetMethod("OnInfoClicked",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).Invoke(view,null);return;}
+ // A stone visibly moving up beside the claw can be discarded by the ordinary bomb button.
+ foreach(var ev in UnityEngine.Object.FindObjectsOfType<Game.GoldMiner.ElementSpriteView>()){
+  var sr=ev.GetComponentsInChildren<UnityEngine.SpriteRenderer>().FirstOrDefault(r=>r.enabled&&r.sprite!=null&&r.color.a>0.6f);if(sr==null)continue;
+  string iconName=sr.sprite.texture.name.ToLowerInvariant().Replace("ui_icon_goldminer_","");
+  var pos=(UnityEngine.Vector2)sr.bounds.center;UnityEngine.Vector2 prev;
+  bool rising=visualPositions.TryGetValue(ev.GetInstanceID(),out prev)&&pos.y-prev.y>0.003f;visualPositions[ev.GetInstanceID()]=pos;
+  if(potionCount<__MAX_POTIONS_PER_LEVEL__&&!session.IsPowerPotionActive(session.GameTime)&&session.GameTime-lastPotion>12000&&(iconName=="gold_large"||iconName=="gold_mid")&&sr.bounds.size.x>0.8f&&rising&&!session.IsIncomeReached()&&Logic.PlayerAssetsMgr.I.GetItemCountByID(50300001)>__POTION_RESERVE__&&view.CanUseProp(cspb.ActvGoldMinerPropType.GOLD_MINER_PROP_POTION)){typeof(Game.GoldMiner.GoldMinerBattleView).GetMethod("OnPropClicked",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).Invoke(view,new object[]{cspb.ActvGoldMinerPropType.GOLD_MINER_PROP_POTION});potionCount++;lastPotion=session.GameTime;log.Add(new{prop="potion",visibleIcon=iconName,gameTime=session.GameTime});}
+  if((iconName=="stone"||iconName=="stone_large")&&!session.IsIncomeReached()&&bombCount<__MAX_BOMBS_PER_LEVEL__&&now-lastBomb>1&&rising&&Logic.PlayerAssetsMgr.I.GetItemCountByID(50300002)>0&&view.CanUseProp(cspb.ActvGoldMinerPropType.GOLD_MINER_PROP_BOMB)&&view.Rigs.Any(r=>UnityEngine.Vector2.Distance(r.View.HeadWorldPosition,pos)<sr.bounds.size.y*.8f+.2f)){
+   UnityEngine.ScreenCapture.CaptureScreenshot("__RUN_DIRECTORY__/bomb-"+session.LevelID+"-"+session.GameTime+".png");
+   typeof(Game.GoldMiner.GoldMinerBattleView).GetMethod("OnPropClicked",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).Invoke(view,new object[]{cspb.ActvGoldMinerPropType.GOLD_MINER_PROP_BOMB});bombCount++;lastBomb=now;log.Add(new{prop="bomb",visibleIcon=iconName,gameTime=session.GameTime});break;
+  }
+ }
+ if(clockPending&&session.LevelDurationMs>clockDurationBefore)clockPending=false;
+ if(!clockPending&&clockCount<__MAX_CLOCKS_PER_LEVEL__ && session.GameTime-lastClock>2000 && session.LevelDurationMs-session.GameTime<3500 && !session.IsIncomeReached() && Logic.PlayerAssetsMgr.I.GetItemCountByID(50300003)>__CLOCK_RESERVE__ && view.CanUseProp(cspb.ActvGoldMinerPropType.GOLD_MINER_PROP_CLOCK)){clockPending=true;clockDurationBefore=session.LevelDurationMs;typeof(Game.GoldMiner.GoldMinerBattleView).GetMethod("OnPropClicked",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).Invoke(view,new object[]{cspb.ActvGoldMinerPropType.GOLD_MINER_PROP_CLOCK});clockCount++;lastClock=session.GameTime;log.Add(new{prop="clock",gameTime=session.GameTime});}
+ // Visible moving animal artwork: avoid while aiming, discard only when held by the ordinary claw.
+ foreach(var ev in UnityEngine.Object.FindObjectsOfType<Game.GoldMiner.ElementSpriteView>()){
+ var mr=ev.GetComponentsInChildren<UnityEngine.MeshRenderer>().FirstOrDefault(r=>r.enabled&&r.sharedMaterial!=null&&r.sharedMaterial.mainTexture!=null&&(r.sharedMaterial.mainTexture.name.ToLowerInvariant().Contains("pangolin")||r.sharedMaterial.mainTexture.name.ToLowerInvariant().Contains("beetle")));if(mr==null)continue;
+ var pos=(UnityEngine.Vector2)mr.bounds.center;UnityEngine.Vector2 prev;bool rising=visualPositions.TryGetValue(ev.GetInstanceID(),out prev)&&pos.y-prev.y>.001f;visualPositions[ev.GetInstanceID()]=pos;
+ if(mr.sharedMaterial.mainTexture.name.ToLowerInvariant().Contains("beetle")&&rising&&potionCount<__MAX_POTIONS_PER_LEVEL__&&!session.IsPowerPotionActive(session.GameTime)&&session.GameTime-lastPotion>12000&&!session.IsIncomeReached()&&Logic.PlayerAssetsMgr.I.GetItemCountByID(50300001)>__POTION_RESERVE__&&view.CanUseProp(cspb.ActvGoldMinerPropType.GOLD_MINER_PROP_POTION)&&view.Rigs.Any(r=>UnityEngine.Vector2.Distance(r.View.HeadWorldPosition,pos)<mr.bounds.size.y*.8f+.25f)){typeof(Game.GoldMiner.GoldMinerBattleView).GetMethod("OnPropClicked",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).Invoke(view,new object[]{cspb.ActvGoldMinerPropType.GOLD_MINER_PROP_POTION});potionCount++;lastPotion=session.GameTime;log.Add(new{prop="potion",visibleIcon="Beetle",gameTime=session.GameTime});}
+ if(mr.sharedMaterial.mainTexture.name.ToLowerInvariant().Contains("pangolin")&&rising&&!session.IsIncomeReached()&&bombCount<__MAX_BOMBS_PER_LEVEL__&&now-lastBomb>1&&Logic.PlayerAssetsMgr.I.GetItemCountByID(50300002)>0&&view.CanUseProp(cspb.ActvGoldMinerPropType.GOLD_MINER_PROP_BOMB)&&view.Rigs.Any(r=>UnityEngine.Vector2.Distance(r.View.HeadWorldPosition,pos)<mr.bounds.size.y*.8f+.25f)){typeof(Game.GoldMiner.GoldMinerBattleView).GetMethod("OnPropClicked",System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.NonPublic).Invoke(view,new object[]{cspb.ActvGoldMinerPropType.GOLD_MINER_PROP_BOMB});bombCount++;lastBomb=now;log.Add(new{prop="bomb",visibleIcon="Pangolin",gameTime=session.GameTime});}
+ }
+ var rig=view.Rigs.FirstOrDefault(r=>r.Hook.State.ToString()=="Swinging");
+ if(rig==null){readySince=0;return;}if(readySince==0){readySince=now;return;}if(now-readySince<0.10||now-lastFire<0.45)return;
+ var anchor=view.Mapper.LogicToWorld(view.Mapper.AnchorLogicX,view.Mapper.AnchorLogicY);
+ float angle=rig.Hook.CurrentAngleDeg;var direction=new UnityEngine.Vector2(UnityEngine.Mathf.Cos(angle*UnityEngine.Mathf.Deg2Rad),-UnityEngine.Mathf.Sin(angle*UnityEngine.Mathf.Deg2Rad));
+ var art=new System.Collections.Generic.List<System.Tuple<string,UnityEngine.Vector2,float,float>>();
+ foreach(var ev in UnityEngine.Object.FindObjectsOfType<Game.GoldMiner.ElementSpriteView>()){
+  if(!ev.gameObject.activeInHierarchy)continue;
+  var sr=ev.GetComponentsInChildren<UnityEngine.SpriteRenderer>().FirstOrDefault(r=>r.enabled&&r.sprite!=null&&r.color.a>0.6f);
+  if(sr==null)continue;
+  var center=(UnityEngine.Vector2)sr.bounds.center;var rel=center-anchor;
+  if(rel.y>-0.2f)continue;
+  float distance=rel.magnitude;
+  string textureName=sr.sprite.texture.name.ToLowerInvariant();
+  float radius=UnityEngine.Mathf.Min(sr.bounds.size.x,sr.bounds.size.y)*(textureName.Contains("stone")||textureName.Contains("rock")||textureName.Contains("dynamite")?0.52f:0.28f);
+  art.Add(System.Tuple.Create(sr.sprite.texture.name,center,distance,radius));
+ }
+ foreach(var ev in UnityEngine.Object.FindObjectsOfType<Game.GoldMiner.ElementSpriteView>()){
+ var mr=ev.GetComponentsInChildren<UnityEngine.MeshRenderer>().FirstOrDefault(r=>r.enabled&&r.sharedMaterial!=null&&r.sharedMaterial.mainTexture!=null&&(r.sharedMaterial.mainTexture.name.ToLowerInvariant().Contains("pangolin")||r.sharedMaterial.mainTexture.name.ToLowerInvariant().Contains("beetle")));if(mr==null)continue;var center=(UnityEngine.Vector2)mr.bounds.center;var rel=center-anchor;if(rel.y<-.2f)art.Add(System.Tuple.Create(mr.sharedMaterial.mainTexture.name,center,rel.magnitude,UnityEngine.Mathf.Min(mr.bounds.size.x,mr.bounds.size.y)*(mr.sharedMaterial.mainTexture.name.ToLowerInvariant().Contains("beetle")?.22f:.55f)));
+ }
+ // Recognize the first visible silhouette along the current rope direction; an approximate visual rule, not a collision query.
+ var first=art.Where(a=>UnityEngine.Vector2.Dot(a.Item2-anchor,direction)>0 && UnityEngine.Mathf.Abs((a.Item2.x-anchor.x)*direction.y-(a.Item2.y-anchor.y)*direction.x)<a.Item4).OrderBy(a=>a.Item3).FirstOrDefault();
+ if(first==null)return;
+ string icon=first.Item1.ToLowerInvariant().Replace("ui_icon_goldminer_", "");
+ if(!(icon.Contains("gold")||icon.Contains("diamond")||icon.Contains("bag")||icon.Contains("beetle")||icon.Contains("power_potion")||icon.Contains("clock")||icon.Contains("magnet")||icon.Contains("freeze_canister")||icon.Contains("stone_breaker")||icon.Contains("slot_machine")||((icon.Contains("stone")||icon.Contains("rock"))&&(session.LevelID==7||now-lastFire>8)&&bombCount<__MAX_BOMBS_PER_LEVEL__&&Logic.PlayerAssetsMgr.I.GetItemCountByID(50300002)>0)))return;
+ if(icon.Contains("bomb")||icon.Contains("dynamite"))return;
+ log.Add(new{time=System.DateTimeOffset.Now.ToString("o"),gameTime=session.GameTime,icon=first.Item1,angle,income=session.IncomeTotal});view.OnFireButton();lastFire=now;readySince=0;
+ }catch(System.Exception e){log.Add(new{error=e.Message});stop();}};
+UnityEditor.EditorApplication.update+=tick;UnityEditor.AssemblyReloadEvents.beforeAssemblyReload+=reload;System.AppDomain.CurrentDomain.SetData(tag,stop);
+return "visual input attached; waits for normal battle; 600s cap";

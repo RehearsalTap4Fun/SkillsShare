@@ -1,0 +1,33 @@
+// Bounded ordinary UI navigation, stop on loss, low stamina, target level or identity change.
+int stopAt=__STOP_AT__;
+if(stopAt>50)return "normal-level navigation only; challenge settlement requires SettleAck and does not advance MaxPassLevel";
+string key="FunctionPreview.LearnedFlow.GoldMinerAdvance";
+if(!UnityEngine.Application.isPlaying||Logic.LPlayer.I.PlayerID!=__PLAYER_ID__||Logic.LPlayer.I.ServerId!=__SERVER_ID__||Game.GoldMiner.LGoldMinerMgr.I.ActvId!=__ACTIVITY_ID__L)return "identity not ready";
+if(typeof(UI.GoldMinerResultPanel).Assembly.ManifestModule.ModuleVersionId.ToString()!="__CLIENT_MODULE_ID__")return "client version changed; relearn affected flow before installation";
+(System.AppDomain.CurrentDomain.GetData(key) as System.Action)?.Invoke();
+int lastLevel=Game.GoldMiner.LGoldMinerMgr.I.CurrentSession?.LevelID??Game.GoldMiner.LGoldMinerMgr.I.MaxPassLevel;
+int phase=0;double began=UnityEditor.EditorApplication.timeSinceStartup,next=began+3,transitionAt=began;bool ended=false;
+var actions=new System.Collections.Generic.List<object>();
+UnityEditor.EditorApplication.CallbackFunction tick=null;UnityEditor.AssemblyReloadEvents.AssemblyReloadCallback reload=null;System.Action stop=null;
+stop=()=>{if(ended)return;ended=true;UnityEditor.EditorApplication.update-=tick;UnityEditor.AssemblyReloadEvents.beforeAssemblyReload-=reload;System.AppDomain.CurrentDomain.SetData(key,null);System.IO.File.AppendAllText("__RUN_DIRECTORY__/navigation.jsonl",Newtonsoft.Json.JsonConvert.SerializeObject(new{stopAt,actions,cleanup=true})+"\n");};
+reload=()=>stop();
+tick=()=>{try{
+ double now=UnityEditor.EditorApplication.timeSinceStartup;
+ if(!UnityEngine.Application.isPlaying||Logic.LPlayer.I.PlayerID!=__PLAYER_ID__||Logic.LPlayer.I.ServerId!=__SERVER_ID__||Game.GoldMiner.LGoldMinerMgr.I.ActvId!=__ACTIVITY_ID__L||now-began>600){stop();return;}
+ var m=Game.GoldMiner.LGoldMinerMgr.I;
+ if(m.CurrentSession!=null){lastLevel=m.CurrentSession.LevelID;phase=0;next=now+3;return;}
+ if(now<next)return;next=now+3;
+ if(m.MaxPassLevel>=stopAt||m.CurrentStamina<=0){stop();return;}
+ var r=DeepUI.PopupManager.I.FindPopup<UI.GoldMinerResultPanel>();
+ if(phase==0&&r!=null){if(m.MaxPassLevel<lastLevel){actions.Add(new{reason="loss"});stop();return;}typeof(UI.GoldMinerResultPanel).GetMethod("OnExitClicked",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance).Invoke(r,null);phase=1;transitionAt=now;actions.Add(new{at=System.DateTimeOffset.Now.ToString("o"),action="result exit",lastLevel});return;}
+ if(phase<1)return;
+ if(now-transitionAt>20){actions.Add(new{reason="navigation timeout; inspect before retry",phase});stop();return;}
+ if(r!=null||phase==3)return;
+ var p=DeepUI.PopupManager.I.FindPopup<UI.UIActivityGoldMiner>();
+ if(p==null){if(phase==1){phase=2;m.EnterActivity(m.ActvId);actions.Add(new{at=System.DateTimeOffset.Now.ToString("o"),action="open activity"});}return;}
+ if(DeepUI.PopupManager.I.FindPopupCountExceptType<UI.UIActivityGoldMiner>()>0)return;
+ if(System.AppDomain.CurrentDomain.GetData("__INPUT_READY_KEY__")==null){actions.Add(new{reason="input helper is not ready; challenge not sent"});stop();return;}
+ phase=3;typeof(UI.UIActivityGoldMiner).GetMethod("OnClickChallenge",System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Instance).Invoke(p,null);actions.Add(new{at=System.DateTimeOffset.Now.ToString("o"),action="challenge next",lastLevel});
+ }catch(System.Exception e){actions.Add(new{error=e.Message});stop();}};
+UnityEditor.EditorApplication.update+=tick;UnityEditor.AssemblyReloadEvents.beforeAssemblyReload+=reload;System.AppDomain.CurrentDomain.SetData(key,stop);
+return "ordinary UI advance active until "+stopAt;

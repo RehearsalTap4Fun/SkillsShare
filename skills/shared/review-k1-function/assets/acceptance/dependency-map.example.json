@@ -1,0 +1,1 @@
+{"schemaVersion":1,"assertions":[{"assertionId":"R13/retrieve","requirements":["gold-miner/retrieve-response"],"code":[{"role":"client","path":"client/Assets/k1/Script/HotfixScripts/K1D1/Code/Game/GoldMiner/View/GoldMinerBattleView.cs","symbol":"OnFireButton"}],"config":[],"environment":["serverId","activityId"],"dynamicTiming":true,"coverage":"partial"}]}

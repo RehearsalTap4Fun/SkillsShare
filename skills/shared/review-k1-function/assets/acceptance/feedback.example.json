@@ -1,0 +1,4 @@
+{
+  "schemaVersion": 1,
+  "proposals": [{"feedbackId": "R13", "status": "failed", "acceptance": "未通过", "details": "填写本轮复现步骤、实际表现及仍需说明的边界", "evidenceIds": ["replace-with-registered-evidence-id"], "images": []}]
+}

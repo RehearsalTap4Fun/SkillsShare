@@ -1,0 +1,9 @@
+{"schemaVersion":1,"scenarios":[
+{"schemaVersion":1,"assertionId":"R4/published_speed","requiredConditions":["potionABWorkbook","loadedPotionValue","isolatedAccount"],"description":"药水 A/B 需两组不同于当前加载的速度值；同钩/同元素测帧与协议，读回配置证明加载。"},
+{"schemaVersion":1,"assertionId":"R41/expired_retry","naturalExpiry":true,"requiredConditions":["personalActivityEndTs","retryableRound","trustedServerTime"],"description":"个人短周期活动自然到期后重试，证明拒绝与原局保护；不能用强制结束替代。"},
+{"schemaVersion":1,"assertionId":"R43/repair_retry_once","requiredConditions":["invalidConfigBundle","fixedConfigBundle","R43/missing_invalid_preserves","mailBefore"],"description":"先证实坏配置不结算不改原局，再修复同账号配置并重试，核对仅补发一次。"},
+{"schemaVersion":1,"assertionId":"R43/expired_no_mail","naturalExpiry":true,"requiredConditions":["personalActivityEndTs","invalidConfigBundle","mailBefore","R43/missing_invalid_preserves"],"description":"个人活动带坏配置自然到期；核对不发错误邮件且数据保留。"},
+{"schemaVersion":1,"assertionId":"R44/aggregate_floor","requiredConditions":["fractionalGearConfig","segmentIncomeControl"],"description":"两段各 3/4 合并后向下取整得 1；单段 3/4 得 0。"},
+{"schemaVersion":1,"assertionId":"R44/large_values","requiredConditions":["serverIntegerLimit","clientIntegerLimit","largeIncomeGM","largeValueConfig"],"description":"用整数/字符串保存大数；9007199254740995 // 4 = 2251799813685248。超业务上限则标不可执行，不能靠浮点样例宣称通过。"},
+{"schemaVersion":1,"assertionId":"R49/expiry_exit","naturalExpiry":true,"requiredConditions":["personalActivityEndTs","battleInProgress","trustedServerTime"],"description":"局内等个人活动自然到期，核对退出 UI、禁止继续操作及服务端终态。"}
+]}

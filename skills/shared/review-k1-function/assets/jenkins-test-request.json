@@ -1,0 +1,19 @@
+{
+  "scope": {
+    "environment": "dev",
+    "serverIds": [],
+    "authorization": ""
+  },
+  "sources": {
+    "server": {"ref": "", "sha": "", "evidence": ""},
+    "config": {"ref": "", "sha": "", "evidence": ""}
+  },
+  "parameters": {
+    "corebranch": "",
+    "branchName": "",
+    "app": "gs",
+    "server_id": "",
+    "ALIVE": "",
+    "DownKey": ""
+  }
+}

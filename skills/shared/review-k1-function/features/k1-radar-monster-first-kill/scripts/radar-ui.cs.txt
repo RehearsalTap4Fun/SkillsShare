@@ -1,0 +1,9 @@
+var rows=new System.Collections.Generic.List<object>();
+foreach(var b in UnityEngine.Object.FindObjectsOfType<UnityEngine.MonoBehaviour>()){
+ if(b==null || !b.gameObject.activeInHierarchy) continue;
+ var path=b.name;var t=b.transform.parent;while(t!=null){path=t.name+"/"+path;t=t.parent;}
+ if(!(path.Contains("Atlas")||path.Contains("Radar")||path.Contains("SearchMonster")||path.Contains("CollectDebris")))continue;
+ if(!(b is UnityEngine.UI.Text) && !(b is UnityEngine.UI.Button) && b.GetType().Name!="EventTriggerListener")continue;
+ rows.Add(new{id=b.gameObject.GetInstanceID(),type=b.GetType().Name,path,text=b is UnityEngine.UI.Text ? ((UnityEngine.UI.Text)b).text : null});
+}
+return rows;

@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "runId": "example-only",
+  "baseline": {
+    "documentVersion": "EXAMPLE-REPLACE",
+    "testcaseDocumentVersion": "EXAMPLE-REPLACE",
+    "repositories": [
+      {"role": "client", "sha": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
+      {"role": "server", "sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
+      {"role": "config", "sha": "cccccccccccccccccccccccccccccccccccccccc"}
+    ]
+  },
+  "environment": {"serverId": "unknown", "accountId": "unknown", "activityId": "unknown", "clientIdentity": "unknown"}
+}

@@ -1,0 +1,15 @@
+if(!UnityEditor.EditorApplication.isPlaying || !Logic.LoginMgrNew.I.IsLogin || Logic.LPlayer.I.PlayerID!=__PLAYER_ID__ || Logic.LPlayer.I.ServerId!=__SERVER_ID__) return "ABORT_IDENTITY";
+var p=Logic.LPlayer.I;
+var a=Logic.CollectAtlasDataMgr.I;
+var rows=new System.Collections.Generic.List<object>();
+foreach(var id in new[]{13330001,13330002,13330003,13330004}) {
+ var cfg=Cfg.C.CD2NpcTroopClass.I(id);
+ var taken=new System.Collections.Generic.List<bool>();
+ for(var level=1;level<=50;level++) taken.Add(p.IsFirstKillTaken(id,level));
+ rows.Add(new{id,killOrder=p.GetKillOrderData(id,false),firstKill=p.GetFirstKillLevel(id),taken1to50=taken,cap=p.GetFirstKillMaxLevel(cfg),cfg.FirstKillOrderMaxLevel});
+}
+var assets=new System.Collections.Generic.List<object>();
+foreach(var id in new[]{3320046,3320041,20010000,3320057,21110017}) assets.Add(new{id,count=Logic.PlayerAssetsMgr.I.GetItemCountByID(id)});
+Logic.PlayerAssetsMgr.I.GetShowAction(out var energy,out var maxEnergy);
+var fields=new System.Collections.Generic.Dictionary<string,object>();
+return new{uid=p.PlayerID,server=p.ServerId,city=p.GetMainCityLevel(),gold=K1D2Config.I.IsGoldEnv,counters=rows,energy,maxEnergy,coin=Logic.PlayerAssetsMgr.I.GetVMCount(11151001),assets,atlas=new{a.taskLevel,a.taskExp,a.refreshNum,a.completedTaskCount,a.tasks,a.EliteTask},lineups=Game.Data.GameData.I.LineUpData.GetLineUpData(),uiFields=fields,atlasDispatch=Logic.LSwitchMgr.I.IsFunctionOpen(Config.SwitchConfig.AtlasDispatchTroop)};

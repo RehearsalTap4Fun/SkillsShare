@@ -1,0 +1,1 @@
+{"schemaVersion":1,"replayId":"gold-miner-retrieve","adapterVersion":"user-bound-v1","steps":[{"action":"fire","selector":{"component":"GoldMinerBattleView"},"preconditions":{"hookState":"Swinging"},"until":{"hookState":"Swinging","cycleComplete":true},"timeoutMs":30000,"expectedEvidence":["protocol","ui","cleanup"]}]}

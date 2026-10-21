@@ -1,0 +1,12 @@
+if(!UnityEditor.EditorApplication.isPlaying) return "NOT_PLAYING";
+if(!Logic.LoginMgrNew.I.IsLogin) return "NOT_LOGGED_IN";
+var p=Logic.LPlayer.I;
+var a=Logic.CollectAtlasDataMgr.I;
+var rows=new System.Collections.Generic.List<object>();
+foreach(var id in new[]{13330001,13330002,13330003,13330004}) {
+ var cfg=Cfg.C.CD2NpcTroopClass.I(id);
+ var taken=new System.Collections.Generic.List<bool>();
+ for(var level=1;level<=10;level++) taken.Add(p.IsFirstKillTaken(id,level));
+ rows.Add(new {id,killOrder=p.GetKillOrderData(id,false),firstKill=p.GetFirstKillLevel(id),firstKillTaken1to10=taken,firstKillEnabled=cfg==null ? false : p.IsFirstKillEnabled(cfg),firstKillCap=cfg==null ? -1 : p.GetFirstKillMaxLevel(cfg)});
+}
+return new {uid=p.PlayerID,server=p.ServerId,city=p.GetMainCityLevel(),threshold=Game.Config.MetaConfig.KillMonstersLevelLimit,configVariant=Game.Config.MetaConfig.TABLE_CONFIG.ToString(),loggedIn=Logic.LoginMgrNew.I.IsLogin,atlas=new{a.isUnlock,a.taskLevel,a.taskExp,a.refreshNum,a.atlasLevel,a.completedTaskCount,a.tasks,a.EliteTask},counters=rows};
