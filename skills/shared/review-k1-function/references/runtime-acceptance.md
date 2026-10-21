@@ -4,7 +4,18 @@
 
 ## 1. 接续依据与权限
 
-接收静态阶段 PrecheckResult JSON、冻结 manifest、当前开发文档版本、用例及已有用户决定。原文有新变化时，只重新对齐受影响规则；旧决定保留出处和当前适用性，不把历史确认重新展示为全部未决。反馈表复验则保存本次被选中行的原文、稳定 ID 和版本，生成同形的 `metadata` 与 `testcases` 基线 JSON。
+接收已有静态阶段 PrecheckResult JSON、冻结 manifest、当前开发文档版本、用例及用户决定；已有交接直接复用。先读取私有功能经验的 [documentBaseline](feature-experience.md#预检后文档确认标记) 并核对当前原文：来源与版本/内容哈希一致时，明确“当前文档已是预检确认后的版本”，不重复完整对齐；变化时只对齐受影响规则。不可读或缺依据记待复核，不以历史标记保证仍是最新；只继续不依赖未决规则的验证，保留缺口。
+
+再按用户请求或已有明确上下文确定模式，记入 `acceptanceMode`；不能仅按分支名称猜测，无法判断才询问一次。范围在生成基线前确定，不先装入全量开发用例再将多余项批量 excluded。
+
+| 模式 | 基线与验收范围 | 完成结论 |
+|---|---|---|
+| `development`：开发分支详细验收 | 以最新文档及反馈表详细验收，覆盖功能规则、主流程、边界、异常及逐项反馈复验；保留需求/用例/反馈稳定 ID 关联。未提供反馈表且环境也无法找到时如实记录，不编造反馈项。 | 仅本轮详细验收范围全部闭环才能通过 |
+| `mainline_regression`：主分支回归 | 理解文档规则后，按正常玩家路径体验入口、玩法操作、交互表现、结果/奖励和日常往返，形成精简的玩家旅程基线。旧开发用例与反馈作为理解线索，不默认全量边界、故障注入或逐条反馈复验；用户明确指定的问题加入定向复验。 | “主分支回归通过（本轮玩家体验范围）”，不推导全量详细验收通过 |
+
+主分支回归不因未重跑完整静态预检或全部开发用例而扩大任务。它仍需理解当前规则、核实实际部署版本、保留实际业务证据和真实异常；发现问题后保留证据并继续其他玩家路径。GM 仅用于本轮已授权的必要前置，不自动为回归安排大规模边界造数。
+
+两种模式都保留旧决定出处和适用性；需求文档版本写入 `metadata.documentVersion` 与同值 `testcaseDocumentVersion`。反馈表另存来源、稳定行 ID 和自身版本（如 `metadata.feedbackVersion`），不能用反馈表更新时间代替需求文档确认版本。反馈原图规则只适用于本轮纳入的复验项及新增问题。
 
 先执行 [功能经验读取](feature-experience.md)，从 [索引](../features/index.md) 找到本功能档案及脚本说明，核对本轮版本、入口、配置和授权；已有本轮读取笔记且条件未变时直接接续。原始证据和 plan/state 仍按本工作流保存，经验档案不替代验收台账。
 
@@ -24,7 +35,7 @@
 
 ## 2. 开测前核验整轮条件
 
-建立运行清单并保存原始证据：
+按本轮模式及实际验收列表建立运行清单并保存原始证据；无关条件记不适用，不为主分支玩家体验额外要求故障模拟、完整配置导出或 GM 前置：
 
 | 项目 | 必须核验的事实 |
 |---|---|
@@ -37,26 +48,45 @@
 
 用整个用例集合检查条件，不能只确认第一条能跑。缺环境时执行 [jenkins-test-environment.md](jenkins-test-environment.md) 的解析和部署流程。用户已授权复制线上服时，使用 `jenkins_environment_workflow.py` 持续推进备份 → 钉钉 DownKey → 本人同 SID 游戏/战场测试服 → 运行校验，并将 ready 的 `environment-evidence.json` 引用到本台账。战场服未指定列表全量恢复，指定列表按列表保留；不为已确认默认规则重问。部署新服本身不保证活动时间、平台定向、账号和快照已就绪，必须回读。Jira 单号与分支不是可用测试 SID 或可导入数据的授权凭据。
 
-准备 GM 能力表：指令来源、权限、参数单位、作用范围、副作用、恢复限制、前后状态证据。特别检查“恢复进度”是否发奖，“拒绝”是否退盟，“查询”是否推送，以及广播是否包含完整字段。不可凭 GM 名称或 exec succ 判断业务成功。
+本轮需要使用 GM 构造前置时，准备 GM 能力表：指令来源、权限、参数单位、作用范围、副作用、恢复限制、前后状态证据。特别检查“恢复进度”是否发奖，“拒绝”是否退盟，“查询”是否推送，以及广播是否包含完整字段。不可凭 GM 名称或 exec succ 判断业务成功。
 
 ## 3. 冻结可执行断言计划
 
-复制 `assets/runtime-plan.json` 到 `.tmp/<run-id>/plan.json`，填入实际基线路径及文件 SHA256。按用例拆独立断言，每条写明确的期望、操作、依赖、最晚可执行阶段 `phase`、所需证据类型。保留原用例 ID 和 requirementIds；不把一个断言的成功推广到其他分支，也不增加断言数来改变用例分母。
+### 3.1 先编排，再开测
 
-- `baselineFile` 指向保存的基线 JSON，至少包含 `metadata.documentVersion`、同值 `testcaseDocumentVersion` 和非空 `testcases`（每条含 id、requirementIds、expected）。优先使用静态阶段原始 PrecheckResult。
+已有明确验收列表时，先逐项检查前置状态、资源消耗、时间窗口与相互影响，输出可供用户和协作者查看的有序计划，再执行游戏动作。没有现成列表时先按本轮模式形成列表，再按同一规则编排。
+
+1. 保留每项稳定 ID、需求/反馈关联和独立预期。按“先完成会被后续改变状态的项目，再消耗资源或跨期”的原则排序；不要直接按原表行号或 ID 派发。
+2. 共享场景、前置和操作的关联项归为一个 `executionGroup`，准备/操作只做一次，逐项采集对应证据并保留独立状态。比如同一次进入可观察入口响应、界面和奖励；一项成功不能代表整组通过。组内按 `assertionIds` 顺序执行，已取得对应证据的多项可分别回填，无需重复业务操作。
+3. 区分“必须成功的业务前置”和“避免状态相互影响的执行顺序”：前者用 `dependsOn`，后者用组内顺序或前后 `batch`。如先测资源不足再补足资源，通常只是顺序约束，前项暴露缺陷不应阻断后续独立验证。
+4. 同一阶段分成有序批次。相同 `phase + batch` 内只有无跨组依赖、执行人不同、资源无冲突的组才并行；依赖组放后续批次。独立账号/客户端仍要检查服务器时钟、联盟、活动实例等共享影响，资源使用统一 ID，不能给同一 Unity 起两个别名假装隔离。共享资源涉及写入时串行；纯只读可并行。
+5. 每个组写执行人、前置/准备、断言顺序及全部共享资源的 read/write 访问。总协调者独占汇总台账和派发，协作者只交各自证据与结果，不并发覆盖同一 state.json；上批未闭环不派发下批。终态失败不阻断独立项，确有业务依赖的项按 blocker 处理。
+
+计划至少展示：模式、文档状态、阶段/批次、分组、验收项 ID、准备/合并操作、业务依赖、执行人、共享资源和逐项证据要求。主分支回归也先规划玩家旅程，计划规模随本轮范围而定。
+
+### 3.2 计划字段与校验
+
+复制 `assets/runtime-plan.json`（`schemaVersion=2`）到 `.tmp/<run-id>/plan.json`，填入本轮模式、`documentBaseline`、实际基线路径及 SHA256。按本轮基线拆独立断言，每条写期望、操作、依赖、最晚可执行阶段 `phase`、证据类型。保留原用例 ID 和 requirementIds，不通过合并丢失验收项。
+
+- `baselineFile` 指向保存的基线 JSON，至少包含 `metadata.documentVersion`、同值 `testcaseDocumentVersion` 和非空 `testcases`（每条含 id、requirementIds、expected）。开发分支优先沿用并补齐 PrecheckResult；主分支回归按 §1 生成玩家旅程基线，保留文档规则引用及实际指定的定向复验。
+- `acceptanceMode` 只允许 `development / mainline_regression`。`documentBaseline.status=precheck_confirmed` 需要来源、确认版本/时间、预检批次、当前版本/核对时间和存在的证据文件，确认版本、当前版本、基线文档版本必须相同；`needs_review` 写来源、核对时间、原因和已取得证据，不得宣称完整通过。CLI 只核验记录，不替代读取原文或自动写回经验。
 - `requiredEvidence` 只能选 `ui / protocol / server / runtime / platform / isolated / static / gm`。按原需求确定，正常业务验收不以 gm/isolated/static 代替 runtime/protocol/server；界面和原生 SDK 还需相应 UI/平台证据。
-- `phase` 为 0 起整数，同阶段先可重复/负向，再资源消耗与不可逆操作。先核验“新建、取消、边界、失败恢复”等分支，再跨截止时间。并行跨服只并行独立只读采集，共享账号/联盟/Unity 的写操作串行。
+- `phase` 为 0 起整数，同阶段先可重复/负向，再资源消耗与不可逆操作；只编排本模式实际纳入的分支，不为主分支回归自动增加异常/边界矩阵。共享账号/联盟/Unity/服务器时钟等有影响的写操作串行。
 - `dependsOn` 是必须通过的前置断言 ID。可行的另一测试前置优先构造，不应因一个失败阻塞整个功能。
+- `executionGroups` 每项含唯一 `id`、非负整数 `batch`、`owner`、`setup`、有序 `assertionIds` 和非空 `resources`（`{"id":"统一资源标识","access":"read或write"}`）。每个断言恰好属于一组，一组只有同一 phase；跨组业务依赖必须在更早的 phase/batch，组内依赖必须在更前位置。校验器拒绝丢项、重复分组、依赖逆序和同批执行人/资源冲突；没有自动全局锁，也不会发现未申报的共享资源。
 - 初始化后计划及基线有哈希绑定，不能删除断言或降低证据要求来结案。需求确实变化时新建修订计划/台账，保留旧版和逐项继承、废止的用户决定；补测使用新环境时同样明确证据批次，不能静默换版本。
 
 在技能目录执行（示例路径需换为本轮实际路径）：
 
 ```powershell
+python <skillRoot>/scripts/runtime_acceptance.py schedule --plan <workspaceRoot>/.tmp/<run-id>/plan.json
 python <skillRoot>/scripts/runtime_acceptance.py init --plan <workspaceRoot>/.tmp/<run-id>/plan.json --state <workspaceRoot>/.tmp/<run-id>/state.json
 python <skillRoot>/scripts/runtime_acceptance.py next --plan <workspaceRoot>/.tmp/<run-id>/plan.json --state <workspaceRoot>/.tmp/<run-id>/state.json
 ```
 
-初始化输出待办，不执行游戏动作。**调用此技能的 Agent 必须执行队列，然后更新 state，再次 next；不是把队列交给用户就结束。** 队列按阶段排序，未来阶段的动作先准备环境；不能因列入队列就越过时间检查。
+`schedule` 校验并输出完整有序计划，不创建台账、不执行游戏动作；先将其整理成上述可读计划。`init/next` 的 `dispatchGroups` 与 `nextActions` 仅列出当前阶段最早未闭环批次中，各独立组下一条可执行断言；`waiting` 是业务依赖未通过，`deferredActions` 是因阶段/批次/组内顺序暂缓的动作。需要推进阶段时先走 `check-advance`，不把暂缓项当作已完成。
+
+**调用此技能的 Agent 必须执行队列，汇总协作者回执后更新 state，再次 next；不是把计划交给用户就结束。** 旧 schemaVersion=1 台账可继续读取、补验和发布，报告注明旧计划未区分模式；新任务使用版本 2，不改旧计划哈希。迁移旧任务时新建修订计划并逐项说明继承情况，不能因切换回归模式删除已经承诺的详细验收项。
 
 ## 4. 执行与证据
 
@@ -138,9 +168,9 @@ python <skillRoot>/scripts/runtime_acceptance.py check-advance --plan <plan.json
 python <skillRoot>/scripts/runtime_acceptance.py publish --plan <plan.json> --state <state.json> --output <workspaceRoot>/reports/<unique-runtime-run-id>
 ```
 
-发布入口强制检查基线/计划未漂移、用例与断言未丢失、证据范围及文件、可继续项为零、清理和环境记录。可继续项存在时失败且不生成报告目录。真实阻塞、已明确排除和执行遗漏可结束本轮，但不能给完整验收通过；只有全部断言 passed 且收尾完成才能 fullyAccepted=true。
+发布入口强制检查基线/计划未漂移、本轮模式内用例与断言未丢失、证据范围及文件、可继续项为零、清理和环境记录。可继续项存在时失败且不生成报告目录。真实阻塞、已明确排除、执行遗漏或文档待复核可结束本轮，但不能给完整通过；版本 2 只有文档已确认、全部断言 passed 且收尾完成才 fullyAccepted=true，此字段仅针对当前模式及计划范围。
 
-结果输出 `summary.html` 与 `runtime-result.json`，包含逐断言观察、证据和剩余动作。报告区分用例数量、唯一缺陷数量和验证方式；同一个缺陷影响多条用例不能重复计作多个缺陷。用户修正设计/归因时保留原证据和决定，不冒充又做了一次实测。
+结果输出 `summary.html` 与 `runtime-result.json`，明确验收模式、文档确认状态、计划分组与逐断言观察、证据和剩余动作。主分支回归结论限定玩家体验范围，不描述为开发分支全量详细验收通过。报告区分用例数量、唯一缺陷数量和验证方式；同一缺陷影响多条用例不重复计数。用户修正设计/归因时保留原证据和决定，不冒充又做了一次实测。
 
 校验器只能检查记录一致性，不能证明证据真实或要求解释正确。最终还需按文档逐项检查是否漏拆分支、是否错用证据。对话说明实际覆盖、主要问题、不可恢复影响及报告入口；有范围缺口就明确未完整通过。
 

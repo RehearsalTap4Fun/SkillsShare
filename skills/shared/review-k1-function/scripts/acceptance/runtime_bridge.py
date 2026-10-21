@@ -20,16 +20,21 @@ def _call(fn, *args):
     except runtime.RuntimeContractError as e: raise WorkflowError(str(e)) from e
 
 
-def create_batch(baseline, assertions, impact, output):
+def create_batch(baseline, assertions, impact, output, planning=None):
     output = Path(output).resolve(); reject_formal_write(output)
     require(not output.exists(), 'BATCH_EXISTS')
     metadata = baseline['metadata']
     require(metadata.get('documentVersion') and metadata['documentVersion'] == metadata.get('testcaseDocumentVersion'), 'BASELINE_VERSION')
     require({a['testcaseId'] for a in assertions} == {c['id'] for c in baseline['testcases']}, 'CASE_COVERAGE')
     validate_impact_binding(baseline, impact)
+    if planning is not None:
+        require(isinstance(planning, dict) and set(planning) == {'acceptanceMode', 'documentBaseline', 'executionGroups'}, 'PLANNING_FIELDS_INVALID')
+        _call(runtime.validate_planning, {**planning, 'assertions': assertions}, baseline, output)
     output.mkdir(parents=True, exist_ok=False)
     atomic_json(output / 'baseline.json', baseline)
     plan = {'schemaVersion': 1, 'runId': output.name, 'baselineFile': 'baseline.json', 'baselineSha256': file_hash(output / 'baseline.json'), 'assertions': assertions}
+    if planning is not None:
+        plan.update(planning, schemaVersion=2)
     state = _call(runtime.initialize, plan, output)
     atomic_json(output / 'plan.json', plan); atomic_json(output / 'state.json', state); atomic_json(output / 'impact.json', impact)
     return {'runId': plan['runId'], 'path': str(output), 'status': 'pending', 'impact': impact}

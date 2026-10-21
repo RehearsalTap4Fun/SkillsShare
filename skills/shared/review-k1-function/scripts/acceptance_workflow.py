@@ -55,7 +55,7 @@ def execute(domain, action, request, root):
         if action == 'analyze': return impact.analyze(request['old'], request['new'], request['changes'], request['dependencies'])
     if domain == 'runtime':
         from acceptance import runtime_bridge
-        if action == 'create': return runtime_bridge.create_batch(request['baseline'], request['assertions'], request['impact'], root)
+        if action == 'create': return runtime_bridge.create_batch(request['baseline'], request['assertions'], request['impact'], root, request.get('planning'))
         if action == 'next': return runtime_bridge.evaluate_run(root)
         if action == 'reuse': return runtime_bridge.record_reuse(root, request)
         if action == 'publish': return runtime_bridge.publish_run(root, Path(request['output']))
