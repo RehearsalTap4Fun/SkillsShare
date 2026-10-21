@@ -20,7 +20,6 @@ class RuntimeContractError(ValueError):
 
 KINDS = {'ui', 'protocol', 'server', 'runtime', 'platform', 'isolated', 'static', 'gm'}
 STATUSES = {'pending', 'partial', 'passed', 'failed', 'blocked', 'excluded', 'missed'}
-MODES = {'development': '开发分支详细验收', 'mainline_regression': '主分支回归（本轮玩家体验范围）'}
 
 
 def require(condition, code):
@@ -49,9 +48,7 @@ def write_new(path, value):
 
 
 def validate_plan(plan, root):
-    require(plan.get('schemaVersion') in {1, 2} and nonempty(plan.get('runId')), 'PLAN_INVALID')
-    if plan['schemaVersion'] == 1:
-        require(not any(k in plan for k in ('acceptanceMode', 'documentBaseline', 'executionGroups')), 'PLANNING_REQUIRES_SCHEMA_2')
+    require(plan.get('schemaVersion') == 1 and nonempty(plan.get('runId')), 'PLAN_INVALID')
     source = root / plan['baselineFile']
     require(hashlib.sha256(source.read_bytes()).hexdigest() == plan.get('baselineSha256'), 'BASELINE_CHANGED')
     baseline = read_json(source)
@@ -85,101 +82,7 @@ def validate_plan(plan, root):
 
     for aid in by_id:
         visit(aid)
-    if plan['schemaVersion'] == 2:
-        validate_planning(plan, baseline, root)
     return baseline
-
-
-def ordered_groups(plan):
-    assertions = {a['id']: a for a in plan['assertions']}
-    return sorted([{**g, 'phase': assertions[g['assertionIds'][0]]['phase']}
-                   for g in plan.get('executionGroups', [])], key=lambda g: (g['phase'], g['batch'], g['id']))
-
-
-def validate_planning(plan, baseline, root):
-    require(plan.get('acceptanceMode') in MODES, 'ACCEPTANCE_MODE_INVALID')
-    doc = plan.get('documentBaseline', {})
-    require(doc.get('status') in {'precheck_confirmed', 'needs_review'}
-            and all(nonempty(doc.get(k)) for k in ('source', 'checkedAt')), 'DOCUMENT_BASELINE_INVALID')
-    require(baseline['metadata'].get('documentSource', doc['source']) == doc['source'], 'DOCUMENT_SOURCE_MISMATCH')
-    if doc['status'] == 'precheck_confirmed':
-        require(all(nonempty(doc.get(k)) for k in ('confirmedVersion', 'confirmedAt', 'precheckRunId')), 'DOCUMENT_BASELINE_INVALID')
-        require(doc['confirmedVersion'] == doc.get('currentVersion') == baseline['metadata']['documentVersion'], 'DOCUMENT_BASELINE_MISMATCH')
-        evidence_kinds(doc.get('evidence', []), root, required=True)
-    else:
-        require(nonempty(doc.get('reason')), 'DOCUMENT_REVIEW_REASON_REQUIRED')
-        evidence_kinds(doc.get('evidence', []), root)
-    assertions = {a['id']: a for a in plan['assertions']}
-    groups = plan.get('executionGroups', [])
-    require(isinstance(groups, list) and bool(groups), 'GROUPS_REQUIRED')
-    assigned, group_ids = {}, set()
-    for g in groups:
-        require(all(nonempty(g.get(k)) for k in ('id', 'owner', 'setup')) and g['id'] not in group_ids, 'GROUP_INVALID')
-        group_ids.add(g['id'])
-        require(type(g.get('batch')) is int and g['batch'] >= 0, 'BATCH_INVALID')
-        aids = g.get('assertionIds', [])
-        require(isinstance(aids, list) and bool(aids), 'GROUP_COVERAGE')
-        for index, aid in enumerate(aids):
-            require(aid in assertions and aid not in assigned, 'GROUP_COVERAGE')
-            assigned[aid] = (g['id'], g['batch'], index)
-        require(len({assertions[aid]['phase'] for aid in aids}) == 1, 'GROUP_PHASE_INVALID')
-        resources = g.get('resources', [])
-        require(isinstance(resources, list) and bool(resources), 'GROUP_RESOURCES_REQUIRED')
-        resource_ids = set()
-        for resource in resources:
-            require(nonempty(resource.get('id')) and resource.get('access') in {'read', 'write'}
-                    and resource['id'] not in resource_ids, 'RESOURCE_INVALID')
-            resource_ids.add(resource['id'])
-    require(set(assigned) == set(assertions), 'GROUP_COVERAGE')
-    for aid, a in assertions.items():
-        group, batch, position = assigned[aid]
-        for dep in a['dependsOn']:
-            dep_group, dep_batch, dep_position = assigned[dep]
-            valid = (dep_position < position if dep_group == group
-                     else (assertions[dep]['phase'], dep_batch) < (a['phase'], batch))
-            require(valid, 'DEPENDENCY_SCHEDULE_INVALID')
-    owners, resources = {}, {}
-    for g in ordered_groups(plan):
-        wave = (g['phase'], g['batch'])
-        require(g['owner'] not in owners.setdefault(wave, set()), 'PARALLEL_OWNER_CONFLICT')
-        owners[wave].add(g['owner'])
-        occupied = resources.setdefault(wave, {})
-        for resource in g['resources']:
-            previous = occupied.get(resource['id'])
-            require(previous is None or previous == resource['access'] == 'read', 'PARALLEL_RESOURCE_CONFLICT')
-            occupied[resource['id']] = resource['access']
-
-
-def schedule(plan, root):
-    validate_plan(plan, root)
-    require(plan['schemaVersion'] == 2, 'SCHEDULE_REQUIRES_SCHEMA_2')
-    return {'runId': plan['runId'], 'acceptanceMode': plan['acceptanceMode'],
-            'documentBaseline': plan['documentBaseline'], 'executionGroups': ordered_groups(plan),
-            'assertions': plan['assertions']}
-
-
-def dispatch_groups(plan, state, next_actions, unfinished):
-    """Return one ordered action per independent group in the earliest open batch.
-
-    This is a dispatch recommendation, not a cross-process resource lock.
-    A coordinator merges receipts and calls next before dispatching again.
-    """
-    actions = {a['id']: a for a in next_actions}
-    open_ids = set(unfinished)
-    groups = [g for g in ordered_groups(plan) if open_ids.intersection(g['assertionIds'])]
-    active_wave = (groups[0]['phase'], groups[0]['batch']) if groups else None
-    dispatch, selected = [], []
-    for g in groups:
-        if (g['phase'], g['batch']) != active_wave or g['phase'] != state['currentPhase']:
-            continue
-        first = next(aid for aid in g['assertionIds'] if aid in open_ids)
-        if first in actions:
-            action = {**actions[first], 'groupId': g['id'], 'batch': g['batch'], 'owner': g['owner']}
-            dispatch.append({**g, 'nextActions': [action]})
-            selected.append(action)
-    selected_ids = {a['id'] for a in selected}
-    deferred = [a for a in next_actions if a['id'] not in selected_ids]
-    return selected, dispatch, deferred
 
 
 def initialize(plan, root):
@@ -264,17 +167,9 @@ def evaluate(plan, state, root):
     if cleanup_ready:
         evidence_kinds(cleanup.get('evidence', []), root, required=True)
     ready = not unfinished and bool(env) and cleanup_ready
-    mode = plan.get('acceptanceMode', 'legacy_unspecified')
-    doc_ready = plan.get('documentBaseline', {}).get('status') == 'precheck_confirmed'
-    doc_status = ('当前文档已是预检确认后的版本' if doc_ready else '待复核') if plan['schemaVersion'] == 2 else '旧计划未记录'
-    dispatch, deferred = [], []
-    if plan['schemaVersion'] == 2:
-        next_actions, dispatch, deferred = dispatch_groups(plan, state, next_actions, unfinished)
     return {'runId': plan['runId'], 'nextActions': next_actions, 'waiting': waiting,
-            'acceptanceMode': mode, 'documentStatus': doc_status,
-            'dispatchGroups': dispatch, 'deferredActions': deferred,
             'unfinished': unfinished, 'canFinalize': ready,
-            'fullyAccepted': ready and (doc_ready or plan['schemaVersion'] == 1) and all(r['status'] == 'passed' for r in results.values()),
+            'fullyAccepted': ready and all(r['status'] == 'passed' for r in results.values()),
             'caseResults': case_results, 'counts': dict(Counter(case_results.values())),
             'missingClosure': [k for k, ok in [('environmentEvidence', bool(env)), ('cleanup', cleanup_ready)] if not ok]}
 
@@ -302,18 +197,9 @@ def publish(plan, state, root, output):
         detail = r.get('observation') or r.get('reason') or r.get('blocker', {}).get('reason', '')
         next_step = r.get('nextAction') or r.get('blocker', {}).get('nextAction', '')
         rows.append('<tr>' + ''.join('<td>' + h(str(v)) + '</td>' for v in [a['testcaseId'], a['id'], a['expected'], r['status'], detail, next_step]) + '<td>' + links + '</td></tr>')
-    mode_label = MODES.get(result['acceptanceMode'], '运行验收（旧计划未区分模式）')
-    verdict = mode_label + '通过' if result['fullyAccepted'] else mode_label + '：本轮结束，未完整通过'
+    verdict = '运行验收通过' if result['fullyAccepted'] else '本轮结束，未完整验收通过'
     document = '<!doctype html><meta charset="utf-8"><title>运行验收</title><style>body{font:16px sans-serif;margin:32px}table{border-collapse:collapse}td,th{border:1px solid #ccc;padding:10px;text-align:left}</style>'
-    document += '<h1>' + h(verdict) + '</h1><p>' + h(result['documentStatus']) + '</p><p>' + h(json.dumps(result['counts'], ensure_ascii=False)) + '</p><p>通过结论仅适用于本轮模式和计划范围。用例与断言分别统计；隔离、GM、静态证据不能替代所需运行证据。台账校验不证明证据真实性。</p>'
-    if plan['schemaVersion'] == 2:
-        doc = plan['documentBaseline']
-        document += '<h2>文档基线</h2><p>' + h('；'.join(str(doc.get(k, '')) for k in
-                      ('source', 'confirmedVersion', 'currentVersion', 'checkedAt', 'reason'))) + '</p>'
-        group_rows = ''.join('<tr>' + ''.join('<td>' + h(str(v)) + '</td>' for v in
-                            (g['phase'], g['batch'], g['id'], g['owner'], g['setup'], ', '.join(g['assertionIds']))) + '</tr>'
-                             for g in ordered_groups(plan))
-        document += '<h2>验收计划</h2><table><tr><th>阶段</th><th>批次</th><th>分组</th><th>执行人</th><th>前置</th><th>断言顺序</th></tr>' + group_rows + '</table>'
+    document += '<h1>' + verdict + '</h1><p>' + h(json.dumps(result['counts'], ensure_ascii=False)) + '</p><p>用例与断言分别统计；隔离、GM、静态证据不能替代所需运行证据。台账校验不证明证据真实性。</p>'
     document += '<table><tr><th>用例</th><th>断言</th><th>预期</th><th>状态</th><th>观察/原因</th><th>补验动作</th><th>证据</th></tr>' + ''.join(rows) + '</table><h2>留存变化</h2><p>' + h(state['cleanup']['retainedChanges']) + '</p>'
     output.mkdir(parents=True, exist_ok=False)
     write_new(output / 'runtime-result.json', {'summary': result, 'plan': plan, 'state': state})
@@ -323,24 +209,20 @@ def publish(plan, state, root, output):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('command', choices=['schedule', 'init', 'next', 'check-advance', 'publish'])
+    parser.add_argument('command', choices=['init', 'next', 'check-advance', 'publish'])
     parser.add_argument('--plan', required=True)
-    parser.add_argument('--state')
+    parser.add_argument('--state', required=True)
     parser.add_argument('--target-phase', type=int)
     parser.add_argument('--output')
     args = parser.parse_args()
     try:
         path = Path(args.plan).resolve()
         root, plan = path.parent, read_json(path)
-        if args.command == 'schedule':
-            result = schedule(plan, root)
-        elif args.command == 'init':
-            require(bool(args.state), 'STATE_REQUIRED')
+        if args.command == 'init':
             state = initialize(plan, root)
             write_new(args.state, state)
             result = evaluate(plan, state, root)
         else:
-            require(bool(args.state), 'STATE_REQUIRED')
             state = read_json(args.state)
             if args.command == 'check-advance':
                 result = check_advance(plan, state, root, args.target_phase)
